@@ -1,0 +1,75 @@
+<!doctype html>
+<html>
+<head>
+  <title>rhombus-list</title>
+  
+  <link rel="import" href="../polymer/polymer.html">
+  <link rel="import" href="../paper-button/paper-button.html">
+  <link rel="import" href="fixed-y-force-layout.html">
+  
+  <style type="text/css">
+    html , body {
+      width: 100%;
+      height: 100%;
+      -webkit-box-sizing: border-box;
+      -moz-box-sizing: border-box;
+      box-sizing: border-box;
+      margin:0;
+      padding:0 0;
+    }
+    body {
+      background: #263238;
+    }
+    div#container {
+      border-style: solid;
+      border-width: 5px;
+      border-color: red;
+      margin: 20px;
+    }
+    paper-button {
+      background: green;
+      color: yellow;
+      margin: 20px;
+    }
+  </style>
+</head>
+
+<body unresolved>
+
+  <paper-button id='add'>ADD NODE</paper-button>
+
+  <div id='container'>
+    <fixed-y-force-layout width='600' height='1000'></fixed-y-force-layout>
+  </div>
+
+  <script>
+    function demo() {
+      var force = document.querySelector('fixed-y-force-layout');
+      var data = {
+        nodes: [
+          {
+            id: 'a',
+            title: 'Title',
+            year: 2010
+          }
+        ],
+        links: [
+        ]
+      };
+      force.load(data);
+
+      var addButton = document.querySelector('paper-button#add');
+      addButton.addEventListener('click', function(e) {
+        console.log('add node');
+        force.addNode({
+          id: 'b',
+          title: 'bbb',
+          year: 2008
+        })
+      });
+    }
+    window.onload = demo;
+  </script>
+
+</body>
+</html>

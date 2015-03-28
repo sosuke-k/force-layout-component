@@ -1,0 +1,20 @@
+{
+  "name": "fixed-y-force-layout",
+  "version": "0.1.0",
+  "authors": [
+    "sosuke-k"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#~0.5.5",
+    "d3-tip": "~0.6.6",
+    "paper-button": "Polymer/paper-button#~0.5.5"
+  }
+}
