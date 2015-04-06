@@ -1,8 +1,25 @@
-<link rel="import" href="../polymer/polymer.html">
-<script src="../d3/d3.js"></script>
-<script type="text/javascript" src="../d3-tip/index.js"></script>
+<!--
+  `fixed-y-force-layout` is a component displaying Force Layout of D3.
+  ```
+    <fixed-y-force-layout width='600' height='1000'></fixed-y-force-layout>
+  ```
+  If you want to know the way to customize, see [here](./how_to_use.html).
+@group D3 Elements
+@element fixed-y-force-layout
+@homepage https://github.com/sosuke-k/fixed-y-force-layout
+-->
 
-<polymer-element name="fixed-y-force-layout">
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../core-toolbar/core-toolbar.html">
+
+<script src="../d3/d3.js"></script>
+<script src="../d3-tip/index.js"></script>
+<script src="../underscore/underscore.js"></script>
+<script src="../cryptico/cryptico.js"></script>
+
+<polymer-element name="fixed-y-force-layout" attributes="width height minYear maxYear">
 
   <template>
     <style>
@@ -13,7 +30,6 @@
         position: relative;
         width: {{width}}px;
         height: {{height}}px;
-        border: solid 3px blue;
       }
       .node.no-active {
         opacity: 0.1;
@@ -37,104 +53,443 @@
         line-height: 1;
         color: black;
       }
-      #info {
+      core-toolbar#info {
         position: absolute;
         top: 0;
         width: 100%;
-        text-align: right;
         color: #546E7A;
+        background-color: transparent;
       }
     </style>
     <div id='container'>
       <svg id="mysvg" width="{{width}}" height="{{height}}"></svg>
-      <div id="info">
-        Nodes : {{nodes.length}}　　Links : {{links.length}}　
-      </div>
+      <core-toolbar id='info'>
+        <div flex></div>
+        <paper-icon-button icon="add" on-tap="{{addNodeButtonPushed}}"></paper-icon-button>
+        <span>Nodes : {{nodes.length}}　　Links : {{links.length}}</span>
+      </core-toolbar>
     </div>
   </template>
   <script>
     Polymer("fixed-y-force-layout", {
+
+      /**
+       * Fired when data is loaded.
+       *
+       * @event loaded
+       */
+
+      /**
+       * Fired when a node is added.
+       *
+       * @event node-added
+       */
+
+      /**
+       * Fired when a node is deleted.
+       *
+       * @event node-deleted
+       */
+
+      /**
+       * Fired when a link is added.
+       *
+       * @event link-added
+       */
+
+      /**
+       * Fired when a link is deleted.
+       *
+       * @event link-deleted
+       */
+
+      /**
+       * Fired when a node is selected.
+       *
+       * @event node-selected
+       */
+
+      /**
+       * Fired when a link is selected.
+       *
+       * @event link-selected
+       */
+
+      /**
+       * The width of host SVG.
+       *
+       * @attribute width
+       * @type number
+       * @default 1280
+       */
+      width: 1280,
+
+      /**
+       * The height of host SVG.
+       *
+       * @attribute height
+       * @type number
+       * @default 1000
+       */
+      height: 1000,
+
+      /**
+       * The maximum of year in which paper was published.
+       *
+       * @attribute minYear
+       * @type number
+       * @default 1995
+       */
+      minYear: 1995,
+
+      /**
+       * The maximum of year in which paper was published.
+       *
+       * @attribute maxYear
+       * @type number
+       * @default 2015
+       */
+      maxYear: 2015,
+
+      /**
+       * The Array of node object.
+       *
+       * @property nodes
+       * @type Array
+       * @default []
+       */
+      nodes: [],
+
+      /**
+       * The Array of link object.
+       *
+       * @property links
+       * @type Array
+       * @default []
+       */
+      links: [],
+
+      /**
+       * The Array of selected node object's id.
+       *
+       * @property selectedNodeIds
+       * @type Array
+       * @default []
+       */
+      selectedNodeIds: [],
+
+      /**
+       * The Array of selected link object's id.
+       *
+       * @property selectedLinkIds
+       * @type Array
+       * @default []
+       */
+      selectedLinkIds: [],
+
       tip: null,
       margin: 50,
       stage: null,
       force: null,
-      nodes: [],
-      links: [],
-
+      
       handing: false,
       handedNode: null,
       handedLink: null,
+      unselected: true,
 
-      publish: {
-        width: 1280,
-        height: 1000,
-        minYear: 1995,
-        maxYear: 2015,
-        selectedNode: null,
-        selectedLink: null,
-      },
-      observe: {
-        "nodes" : "nodesChanged",
-        "nodesAdded" : "nodesAddedChanged",
-        "links" : "linksChanged",
-        // "selectedNode" : "selectedNodeChanged",
-      },
       ready: function() {
         console.log("document-graph ready");
         init(this);
         update(this);
       },
-      load: function(data) {
-        // this.nodes.push(data.nodes);
-        Array.prototype.push.apply(this.nodes, data.nodes);
-        // this.links.push(data.links);
-        Array.prototype.push.apply(this.links, data.links);
-        update(this);
+
+      getCipherText: function(plainText) {
+        if (!this.MattsRSAkey || !this.MattsPublicKeyString) {
+          // The passphrase used to repeatably generate this RSA key.
+          var PassPhrase = "Why so serious?"; 
+          // The length of the RSA key, in bits.
+          var Bits = 1024; 
+
+          this.MattsRSAkey = cryptico.generateRSAKey(PassPhrase, Bits);
+          this.MattsPublicKeyString = cryptico.publicKeyString(this.MattsRSAkey); 
+        }
+        return cryptico.encrypt(plainText, this.MattsPublicKeyString).cipher;
       },
+
+      getPlainText: function(cipherText) {
+        return cryptico.decrypt(cipherText, this.MattsRSAkey).plaintext;
+      },
+
+      /**
+       * Load data of nodes and links.
+       * 
+       * data example:
+       * 
+       * ```
+       *   {
+       *     nodes: [
+       *       {
+       *         id: 'id', (requirement)
+       *         title: 'title',
+       *         year: 2014,
+       *       }
+       *     ],
+       *     links: [
+       *       {
+       *         sourceNodeId: 'target_node_id',
+       *         targetNodeId: 'source_node_id'
+       *       }
+       *     ]
+       *   }
+       * ```
+       * 
+       * @method load
+       * @param {object} data 
+       */
+      load: function(data) {
+        if (!data.nodes || !data.links) {
+          console.log("argment error", data);
+        } else {
+          if (!Array.isArray(data.nodes) || !Array.isArray(data.links)) {
+            console.log("nodes and links is not array", data.nodes, data.links);
+          } else {
+            Array.prototype.push.apply(this.nodes, data.nodes);
+            update(this);
+            for(var i = 0; i < data.links.length; i++) {
+              this.addLink(data.links[i].sourceNodeId, data.links[i].targetNodeId);
+            }
+            this.fire("loaded", data);
+          }
+        }
+      },
+
+      /**
+       * Add node.
+       *
+       * node example:
+       *
+       * ```
+       *   {
+       *     id: 'id', (optional)
+       *     title: 'title',
+       *     year: 2014
+       *   }
+       * ```
+       *
+       * @method addNode
+       * @param {object} node 
+       */
       addNode: function(node) {
+        if (node.id) {
+          if (this.nodes.filter(function(n) { return n.id === node.id; }).length > 0) {
+            console.log("the node of '" + node.id + "' already exist");
+            return false;
+          }
+        } else {
+          console.log('node do not have id');
+          node.id = this.getCipherText(node.title);
+        }
+        if (typeof(node) != "object") {
+          console.log("argment error", node);
+          return false;
+        }
         Array.prototype.push.apply(this.nodes, [node]);
         update(this);
+        this.fire('node-added', node);
       },
-      // nodesChanged: function() {
-      //   // console.log('nodesChanged');
-      //   // update(this);
-      // },
-      nodesAddedChanged: function(oldValue, newValue) {
-        var addArray = [];
-        if (Array.isArray(newValue)) {
-          addArray = newValue;
-        } else {
-          addArray.push(newValue);
+
+      addNodeButtonPushed: function(e) {
+        // 将来的にdialogで入力できるように汗
+        var sampleNode = {
+          title: 'Title',
+          year: 2010
+        };
+        this.addNode(sampleNode);
+      },
+
+      /**
+       * Update node data.
+       *
+       * @method updateNode
+       * @param {object} newNode 
+       */
+      updateNode: function(newNode) {
+        this.nodes = this.nodes.filter( function(n) {
+          if (n.id == newNode.id) {
+            for( key in newNode) {
+              n[key] = newNode[key];
+            }
+          }
+          return n;
+        });
+      },
+
+      /**
+       * Delete a node and related links.
+       *
+       * @method deleteNode
+       * @param {string} nodeId 
+       */
+      deleteNode: function(nodeId) {
+        console.log("delete node(id is " + nodeId + ")");
+        if (typeof(nodeId) != "string") {
+          console.log("argment error", nodeId);
+          return false;
+        } else if (this.nodes.filter(function(n) { return n.id === nodeId; }).length == 0) {
+          console.log("the node of '" + nodeId + "' not exists");
+          return false;
         }
-        // Array.prototype.push.apply(a, b)において a, b はどちらも配列でなければ。(applyの第２引数は[args])
-        // Array.prototype.push.apply(this.nodes,addArray);
-        // update(this);
-      },
-      linksChanged: function(oldValue, newValue) {
-        console.log("linksChanged");
-        // update(this);
-      },
-
-      selectedNodeChanged: function(oldValue, newValue) {
-        console.log("selectedNodeChanged in graph");
-        select(this, newValue, "node");
-      },
-      selectedLinkChanged: function(oldValue, newValue) {
-        console.log("selectedLinkChanged in graph");
-        select(this, newValue, "link");
-      },
-
-      deleteNode: function(nodeIdx) {
-        console.log("delete node(index is " + nodeIdx + ")");
-        this.nodes.splice(nodeIdx,1);
+        this.nodes = this.nodes.filter(function(n) {
+          return n.id !== nodeId;
+        });
+        this.links = this.links.filter(function(l) {
+          return (l.source.id !== nodeId && l.target.id !== nodeId);
+        });
         update(this);
-      }
+        this.fire('node-deleted', nodeId);
+      },
+
+      /**
+       * Add a link from source id to target id.
+       *
+       * @method addLink
+       * @param {string} sourceNodeId 
+       * @param {string} targetNodeId 
+       */
+      addLink: function(sourceNodeId, targetNodeId) {
+        if (typeof(sourceNodeId) != 'string' || typeof(targetNodeId) != 'string') {
+          console.log("argment error");
+          console.log("sourceNodeId", sourceNodeId, "targetNodeId", targetNodeId);
+          return false;
+        } else if (this.links.filter(function(l) { return (l.source.id === sourceNodeId && l.target.id === targetNodeId); }).length > 0) {
+          console.log("the link from '" + sourceNodeId + "' to '" + targetNodeId + "' already exist");
+          return false;
+        }
+        var sN = this.nodes.filter(function(n) { return n.id === sourceNodeId; })[0];
+        var tN = this.nodes.filter(function(n) { return n.id === targetNodeId; })[0];
+        if (!sN || !tN) {
+          console.log("node is not found");
+          console.log(sN, tN);
+          return false;
+        } else {
+          var id = this.getCipherText(sourceNodeId + " -> " + targetNodeId);
+          var l = {id: id, source: sN, target: tN};
+          this.links.push(l);
+          update(this);
+          this.fire('link-added', {source: sourceNodeId, target: targetNodeId});
+        }
+      },
+
+      /**
+       * Delete a link from source id to target id.
+       *
+       * @method deleteLink
+       * @param {string} sourceNodeId 
+       * @param {string} targetNodeId 
+       */
+      deleteLink: function(sourceNodeId, targetNodeId) {
+        if (typeof(sourceNodeId) != 'string' || typeof(targetNodeId) != 'string') {
+          console.log('argment error');
+          return false;
+        }
+        var sN = this.nodes.filter(function(n) { return n.id === sourceNodeId; })[0];
+        var tN = this.nodes.filter(function(n) { return n.id === targetNodeId; })[0];
+        if (!sN || !tN) {
+          console.log("node is not found");
+          console.log(sN, tN);
+          return false;
+        } else if (this.links.filter(function(l) { return (l.source.id === sourceNodeId && l.target.id === targetNodeId); }).length == 0) {
+          console.log("the link from '" + sourceNodeId + "' to '" + targetNodeId + "' not exists");
+          return false;
+        } else {
+          this.links = this.links.filter(function(l) { return (l.source.id === sourceNodeId && l.target.id === targetNodeId) ? null : l; });this.links.filter(function(l) { return (l.source.id === sourceNodeId && l.target.id === targetNodeId) ? null : l; })
+          update(this);
+          this.fire('link-deleted', {source: sourceNodeId, target: targetNodeId});
+        }
+      },
+
+      /**
+       * Select a node.
+       *
+       * @method selectNode
+       * @param {string} nodeId 
+       * @param {boolean} multi
+       */
+      selectNode: function(nodeId, multi) {
+        this.unselected = false;
+        if (multi) {
+          this.selectedNodeIds.push(nodeId);
+        } else {
+          this.selectedLinkIds = [];
+          this.selectedNodeIds = [nodeId];
+        }
+        this.fire("node-selected", nodeId);
+      },
+
+      /**
+       * Select a link.
+       *
+       * @method selectLink
+       * @param {string} linkId 
+       * @param {boolean} multi
+       */
+      selectLink: function(linkId, multi) {
+        this.unselected = false;
+        if (multi) {
+          this.selectedLinkIds.push(linkId);
+        } else {
+          this.selectedNodeIds = [];
+          this.selectedLinkIds = [linkId];
+        }
+        this.fire("link-selected", linkId);
+      },
+
+      /**
+       * Unselect all nodes and links.
+       *
+       * @method unselect
+       */
+       unselect: function() {
+        this.unselected = true;
+        this.selectedNodeIds = [];
+        this.selectedLinkIds = [];
+       },
+
+      /**
+       * Get the id of the node by title.
+       *
+       * @method getNodeId
+       * @param {string} title 
+       */
+      getNodeId: function(title) {
+        var nodes = this.nodes.filter(function(n){ return n.title == title});
+        return nodes.length > 0 ? nodes[0].id : null;
+      },
+
+      /**
+       * Get the id of the link by source node id and target node id.
+       *
+       * @method getLinkId
+       * @param {string} sourceNodeId 
+       * @param {string} targetNodeId 
+       */
+      getLinkId: function(sourceNodeId, targetNodeId) {
+        var links = this.links.filter(function(l){ return l.source.id == sourceNodeId && l.target.id == targetNodeId});
+        return links.length > 0 ? links[0].id : null;
+      },
+
+      selectedNodeIdsChanged: function(oldValue, newValue) {
+        activateSelectedNode(this);
+      },
+
+      selectedLinkIdsChanged: function(oldValue, newValue) {
+        activateSelectedLink(this);
+      },
+
     });
 
     function init(el) {
       el.stage = d3.select(el.$.mysvg);
-      // el.$.mysvg.attributes["width"] = window.innerWidth - 2 * 240;
-      // el.width = window.innerWidth - 2 * 240;
 
       try {
         el.tip = d3.tip()
@@ -185,9 +540,12 @@
     function update(el) {
       console.log("updating...");
 
+      el.force.nodes(el.nodes).links(el.links);
+
       var nodeGroup = el.stage.selectAll(".node")
-        // ひとまず自動付加のindexをキーに。
-        .data(el.nodes);
+        .data(el.nodes, function(d){
+          return d.id;
+        });
 
       var nodeEnterGroup = nodeGroup.enter()
         .append("g")
@@ -218,9 +576,9 @@
           if (el.stage.selectAll(".node.active").data().filter(function(n) {
             return n.index == d.index;
           }).length > 0 ) {
-            unselect(el);
+            el.unselect();
           } else {
-            el.selectedNode = d;
+            el.selectNode(d.id, false);
           }
 
         })
@@ -235,7 +593,7 @@
           var refferedNodes = [];
           for (var i = 0; i < refNode.length; i++) {
             var refferedNode = {};
-            // bibtex の形に整形
+            // bibtex の形に整形したい
             refferedNode.title = refNode[i].target.title;
             refferedNodes.push(refferedNode);
           }
@@ -261,14 +619,9 @@
 
       nodeGroup.exit().remove();
 
-
       var link = el.stage.selectAll(".link")
         .data(el.links, function(l) {
-          // ひとまず自動付加のindexとindexの組をキーに。
-          var sourceIndex = (typeof(l.source) == "object") ? l.source.index : l.source;
-          var targetIndex = (typeof(l.target) == "object") ? l.target.index : l.target;
-          var key = sourceIndex + "-" + targetIndex;
-          return key;
+          return l.id;
         });
 
       link.enter()
@@ -283,9 +636,9 @@
             var targetSame = l.target.index == d.target.index ? true : false;
             return sourceSame && targetSame;
           }).length > 0 ) {
-            unselect(el);
+            el.unselect();
           } else {
-            el.selectedLink = d;
+            el.selectLink(d.id, false);
           }
         });
 
@@ -366,6 +719,7 @@
           var handedNode = el.handedNode.data()[0];
 
           var nearestIndex = handedNode.index;
+          var nearestId = null;
           var nearestDistance = Math.sqrt(el.width * el.width + el.height * el.height);
 
           for (var i = 0; i < nodeData.length; i++) {
@@ -379,10 +733,11 @@
             if (nearestDistance > distance && i != handedNode.index) {
               nearestDistance = distance;
               nearestIndex = nodeData[i].index;
+              nearestId = nodeData[i].id;
             }
           }
 
-          el.links.push({ source: handedNode.index, target: nearestIndex });
+          el.addLink(handedNode.id, nearestId );
         }
       });
 
@@ -416,50 +771,30 @@
       return color;
     }
 
-    function select(el, item, type) {
-      console.log("select function (type:" + type + ")");
+    // function updateNode(el) {
+    //   el.stage.selectAll(".node")
 
-      if (type == "node") {
+    // }
 
-        el.stage.selectAll(".node")
-          .classed("active", function(n) {
-            return n.index == item.index;
-          })
-          .style("opacity", function(n) {
-            return n.index == item.index ? 1.0 : 0.3;
-          });
-        el.stage.selectAll(".link")
-          .classed("active", false)
-          .style("opacity", 0.3);
-
-      } else if (type == "link") {
-        el.stage.selectAll(".node")
-          .classed("active", false)
-          .style("opacity", 0.3);
-
-        el.stage.selectAll(".link")
-          .classed("active", function(l) {
-            var sourceSame = item.source.index == l.source.index ? true : false;
-            var targetSame = item.target.index == l.target.index ? true : false;
-            return sourceSame && targetSame;
-          })
-          .style("opacity", function(l) {
-            var sourceSame = item.source.index == l.source.index ? true : false;
-            var targetSame = item.target.index == l.target.index ? true : false;
-            return sourceSame && targetSame ? 1.0 : 0.3;
-          });
-      }
-
-    }// end select
-
-    function unselect(el) {
+    function activateSelectedNode(el) {
       el.stage.selectAll(".node")
-        .classed("active", false)
-        .style("opacity", 1.0);
+        .classed("active", function(n) {
+          return _.contains(el.selectedNodeIds, n.id);
+        })
+        .style("opacity", function(n) {
+          return el.unselected || _.contains(el.selectedNodeIds, n.id) ? 1.0 : 0.3;
+        });
+    }// end activateSelectedNode
+
+    function activateSelectedLink(el) {
       el.stage.selectAll(".link")
-        .classed("active", false)
-        .style("opacity", 1.0);
-    }// end unselect
+        .classed("active", function(l) {
+          return _.contains(el.selectedLinkIds, l.id);
+        })
+        .style("opacity", function(l) {
+          return el.unselected || _.contains(el.selectedLinkIds, l.id) ? 1.0 : 0.3;
+        });
+    }// end activateSelectedLink
 
   </script>
 </polymer-element>

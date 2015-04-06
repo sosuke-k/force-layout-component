@@ -4,17 +4,39 @@
   "authors": [
     "sosuke-k"
   ],
+  "description": "The Force Layout of D3",
   "license": "MIT",
+  "homepage": "https://github.com/sosuke-k/rhombus-list",
+  "keywords": [
+    "Polymer",
+    "web-components",
+    "D3.js"
+  ],
+  "main": [
+    "fixed-y-force-layout.html"
+  ],
   "ignore": [
     "**/.*",
     "node_modules",
     "bower_components",
+    "coffee",
+    "js",
     "test",
     "tests"
   ],
   "dependencies": {
     "polymer": "Polymer/polymer#~0.5.5",
     "d3-tip": "~0.6.6",
-    "paper-button": "Polymer/paper-button#~0.5.5"
+    "paper-button": "Polymer/paper-button#~0.5.5",
+    "paper-icon-button": "Polymer/paper-icon-button#~0.5.5",
+    "core-toolbar": "Polymer/core-toolbar#~0.5.5",
+    "core-component-page": "Polymer/core-component-page#~0.5.5",
+    "cryptico": "*",
+    "underscore": "~1.8.3",
+    "moment": "~2.9.0",
+    "moment-timezone": "~0.3.1",
+    "voice-elements": "~0.2.0",
+    "core-drawer-panel": "Polymer/core-drawer-panel#~0.5.5",
+    "core-pages": "Polymer/core-pages#~0.5.5"
   }
 }

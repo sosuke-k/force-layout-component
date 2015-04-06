@@ -1,9 +1,11 @@
 <!doctype html>
 <html>
 <head>
-  <title>rhombus-list</title>
+  <title>fixed-y-force-layout</title>
   
   <link rel="import" href="../polymer/polymer.html">
+  <link rel="import" href="../core-drawer-panel/core-drawer-panel.html">
+  <link rel="import" href="../core-pages/core-pages.html">
   <link rel="import" href="../paper-button/paper-button.html">
   <link rel="import" href="fixed-y-force-layout.html">
   
@@ -20,56 +22,181 @@
     body {
       background: #263238;
     }
-    div#container {
-      border-style: solid;
-      border-width: 5px;
-      border-color: red;
-      margin: 20px;
-    }
-    paper-button {
-      background: green;
-      color: yellow;
-      margin: 20px;
+    .code_container {
+      margin: 10px;
     }
   </style>
 </head>
 
+<polymer-element name="demo-component">
+  <template>
+    <style>    
+      :host {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        box-sizing: border-box;
+      }
+      paper-button {
+        width: 100%;
+        margin: 20px;
+      }
+      #core_drawer_panel {
+        position: absolute;
+        top: 0px;
+        right: 0px;
+        bottom: 0px;
+        left: 0px;
+        width: 100%;
+        height: 100%;
+      }
+      #section {
+        box-shadow: rgba(0, 0, 0, 0.0980392) 0px 2px 4px, rgba(0, 0, 0, 0.0980392) 0px 0px 3px;
+        background-color: rgb(250, 250, 250);
+      }
+      #section1 {
+        height: 100%;
+        box-sizing: border-box;
+        background-color: rgb(221, 221, 221);
+      }
+      #core_drawer_panel1 {
+        position: absolute;
+        top: 0px;
+        right: 0px;
+        bottom: 0px;
+        left: 0px;
+        width: 100%;
+        height: 100%;
+      }
+      #section2 {
+        box-shadow: rgba(0, 0, 0, 0.0980392) 0px 2px 4px, rgba(0, 0, 0, 0.0980392) 0px 0px 3px;
+        background-color: rgb(250, 250, 250);
+      }
+      #section3 {
+        height: 100%;
+        box-sizing: border-box;
+        background-color: rgb(221, 221, 221);
+      }
+      #contaier {
+        overflow: scroll;
+      }
+    </style>
+    <core-drawer-panel transition id="core_drawer_panel" touch-action drawerWidth='{{leftWidth}}px'>
+      <section id="section" drawer style="overflow: scroll;">
+        <div layout vertical center>
+          <paper-button id='add_node' on-tap="{{addButton}}">ADD NODE</paper-button>
+          <paper-button id='update_node' on-tap="{{updateButton}}">UPDATE NODE</paper-button>
+          <paper-button id='delete_node' on-tap="{{deleteButton}}">DELETE NODE</paper-button>
+          <paper-button id='add_link' on-tap="{{addLinkButton}}">ADD LINK</paper-button>
+          <paper-button id='delete_link' on-tap="{{deleteLinkButton}}">DELETE LINK</paper-button>
+        </div>
+      </section>
+      <section id="section1" main>
+        <core-drawer-panel transition id="core_drawer_panel1" rightDrawer touch-action drawerWidth='{{rightWidth}}px'>
+          <section id="section2" drawer style="overflow: scroll;">
+            <core-pages selected="{{selected}}">
+              <div><content select="[add_node_code]"></content></div>
+              <div><content select="[update_node_code]"></content></div>
+              <div><content select="[delete_node_code]"></content></div>
+              <div><content select="[add_link_code]"></content></div>
+              <div><content select="[delete_link_code]"></content></div>
+            </core-pages>
+          </section>
+          <section id="section3" main style="overflow: scroll;">
+            <fixed-y-force-layout id='force' width='{{graphWidth}}' height='1000'></fixed-y-force-layout>
+          </section>
+        </core-drawer-panel>
+      </section>
+    </core-drawer-panel>
+  </template>
+  <script>
+    Polymer("demo-component", {
+
+      selected: 0,
+
+      leftWidth: 170,
+      rightWidth: 500,
+      graphWidth: 700,
+
+      ready: function() {
+        this.graphWidth = window.innerWidth - this.leftWidth - this.rightWidth;
+
+        var data = {
+          nodes: [
+            {
+              id: 'a',
+              title: 'Title A',
+              year: 2000
+            },
+            {
+              id: 'c',
+              title: 'Title C',
+              year: 2002
+            }
+          ],
+          links: [
+            {
+              id: 'ac',
+              sourceNodeId: 'c',
+              targetNodeId: 'a'
+            }
+          ]
+        };
+        this.$.force.load(data);
+      },
+
+      addButton: function() {
+        this.$.force.addNode({
+          id: 'b',
+          title: 'Title B',
+          year: 2001
+        });
+        this.selected = 0;
+      },
+
+      updateButton: function() {
+        var id = this.$.force.getNodeId("Title B");
+        var node = {
+          id: id,
+          title: "Title BBB",
+          year: 2004
+        };
+        this.$.force.updateNode(node);
+        this.selected = 1;
+      },
+
+      deleteButton: function() {
+        var node = this.$.force.nodes.filter(function(n){return n.title == "Title B"})[0];
+        if (typeof(node) == "object") {
+          console.log("delete node of '" + node.id + "'");
+          this.$.force.deleteNode(node.id);
+        }
+        this.selected = 2;
+      },
+
+      addLinkButton: function() {
+        this.$.force.addLink("c", "a");
+        this.selected = 3;
+      },
+
+      deleteLinkButton: function() {
+        this.$.force.deleteLink("c", "a");
+        this.selected = 4;
+      },
+
+    });
+  </script>
+</polymer-element>
+
 <body unresolved>
 
-  <paper-button id='add'>ADD NODE</paper-button>
-
-  <div id='container'>
-    <fixed-y-force-layout width='600' height='1000'></fixed-y-force-layout>
-  </div>
-
-  <script>
-    function demo() {
-      var force = document.querySelector('fixed-y-force-layout');
-      var data = {
-        nodes: [
-          {
-            id: 'a',
-            title: 'Title',
-            year: 2010
-          }
-        ],
-        links: [
-        ]
-      };
-      force.load(data);
-
-      var addButton = document.querySelector('paper-button#add');
-      addButton.addEventListener('click', function(e) {
-        console.log('add node');
-        force.addNode({
-          id: 'b',
-          title: 'bbb',
-          year: 2008
-        })
-      });
-    }
-    window.onload = demo;
-  </script>
+  <demo-component>
+    <div class='code_container' add_node_code><script src="http://gist-it.appspot.com/github/sosuke-k/fixed-y-force-layout/blob/master/fixed-y-force-layout.html?slice=0:20"></script></div>
+    <div class='code_container' update_node_code><script src="http://gist-it.appspot.com/github/sosuke-k/fixed-y-force-layout/blob/master/fixed-y-force-layout.html?slice=20:40"></script></div>
+    <div class='code_container' delete_node_code><script src="http://gist-it.appspot.com/github/sosuke-k/fixed-y-force-layout/blob/master/fixed-y-force-layout.html?slice=40:60"></script></div>
+    <div class='code_container' add_link_code><script src="http://gist-it.appspot.com/github/sosuke-k/fixed-y-force-layout/blob/master/fixed-y-force-layout.html?slice=60:80"></script></div>
+    <div class='code_container' delete_link_code><script src="http://gist-it.appspot.com/github/sosuke-k/fixed-y-force-layout/blob/master/fixed-y-force-layout.html?slice=80:100"></script></div>
+  </demo-component>
 
 </body>
 </html>

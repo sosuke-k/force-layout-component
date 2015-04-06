@@ -1,0 +1,129 @@
+<!doctype html>
+<html>
+<head>
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../voice-elements/dist/voice-player.html">
+<script src="../moment/moment.js"></script>
+<script src="../moment-timezone/builds/moment-timezone-with-data.js"></script>
+
+</head>
+
+<polymer-element name="analog-clock" attributes="timezone">
+  <template>
+    <style>
+      #clock {
+        stroke: black;
+        stroke-linecap: round;
+        fill: #eef;
+      }
+      #face { stroke-width: 3px;}
+      #ticks { stroke-width: 2; }
+      #hourhand {stroke-width: 5px;}
+      #minutehand {stroke-width: 3px;} /* narrow minute hand */
+      #secondhand {stroke-width: 1px;}
+      #numbers {
+        font-family: sans-serif; font-size: 7pt; font-weight: bold;
+        text-anchor: middle; stroke: none; fill: black;
+      }
+    </style>
+
+    <h1>{{timezone}}</h1>
+    <svg id="clock" viewBox="0 0 100 100" width="200" height="200">
+      <circle id="face" cx="50" cy="50" r="45"/>
+      <g id="ticks">
+        <!-- 12 hour tick marks -->
+        <line x1='50' y1='5.000' x2='50.00' y2='10.00'/>
+        <line x1='72.50' y1='11.03' x2='70.00' y2='15.36'/>
+        <line x1='88.97' y1='27.50' x2='84.64' y2='30.00'/>
+        <line x1='95.00' y1='50.00' x2='90.00' y2='50.00'/>
+        <line x1='88.97' y1='72.50' x2='84.64' y2='70.00'/>
+        <line x1='72.50' y1='88.97' x2='70.00' y2='84.64'/>
+        <line x1='50.00' y1='95.00' x2='50.00' y2='90.00'/>
+        <line x1='27.50' y1='88.97' x2='30.00' y2='84.64'/>
+        <line x1='11.03' y1='72.50' x2='15.36' y2='70.00'/>
+        <line x1='5.000' y1='50.00' x2='10.00' y2='50.00'/>
+        <line x1='11.03' y1='27.50' x2='15.36' y2='30.00'/>
+        <line x1='27.50' y1='11.03' x2='30.00' y2='15.36'/>
+      </g>
+
+      <g id="numbers">
+        <!-- Number the cardinal directions-->
+        <text x="50" y="18">12</text><text x="85" y="53">3</text>
+        <text x="50" y="88">6</text><text x="15" y="53">9</text>
+      </g>
+
+      <!-- Draw hands pointing straight up. We rotate them in the code. -->
+      <g id="hands"> <!-- Add shadows to the hands -->
+        <line id="hourhand" x1="50" y1="50" x2="50" y2="24"/>
+        <line id="minutehand" x1="50" y1="50" x2="50" y2="20"/>
+        <line id="secondhand" x1="50" y1="50" x2="50" y2="16"/>
+      </g>
+    </svg>
+  </template>
+
+
+  <script>
+    Polymer({
+      ready: function() {
+        this.updateTime();
+      },
+
+      updateTime: function() { 
+        var now = moment().tz(this.timezone);
+
+        var sec = now.seconds();
+        var min = now.minutes();
+        var hour = (now.hours() % 12) + min/60;
+
+        var secangle = sec*6;
+        var minangle = min*6;
+        var hourangle = hour*30;
+
+        var sechand = this.$.secondhand;
+        var minhand = this.$.minutehand;
+        var hourhand = this.$.hourhand;
+
+        sechand.setAttribute("transform", "rotate(" + secangle + ",50,50)");
+        minhand.setAttribute("transform", "rotate(" + minangle + ",50,50)");
+        hourhand.setAttribute("transform", "rotate(" + hourangle + ",50,50)");
+
+        setTimeout(this.updateTime.bind(this), 1000);
+      }
+    });
+  </script>
+</polymer-element>
+
+<body >
+
+<style>
+  html , body {
+    width: 100%;
+    height: 100%;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    margin:0;
+    padding:0 0;
+  }
+  body {
+    background-color: #eceff1;
+  }
+  #tokyo {
+    color: #cfd8dc;
+  }
+  analog-clock {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -70%);
+  }
+</style>
+
+  <voice-player autoplay accent="en-US" text="I'm sorry! This page is under construction!"></voice-player>
+
+  <analog-clock timezone="Asia/Tokyo" id="tokyo"></analog-clock>
+
+</body>
+
+</html>
