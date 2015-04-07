@@ -8,6 +8,14 @@
   <link rel="import" href="../core-pages/core-pages.html">
   <link rel="import" href="../paper-button/paper-button.html">
   <link rel="import" href="fixed-y-force-layout.html">
+
+  <script src="https://rawgit.com/markknol/console-log-viewer/gh-pages/console-log-viewer.js"></script>
+  <script>
+    window.onload = function() {
+      var div = document.getElementById("debug_console");
+      div.className = "bottom-aligned";
+    };
+  </script>
   
   <style type="text/css">
     html , body {
