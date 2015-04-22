@@ -1,12 +1,12 @@
 <!--
-  `fixed-y-force-layout` is a component displaying Force Layout of D3.
+  `force-layout-component` is a component displaying Force Layout of D3.
   ```
-    <fixed-y-force-layout width='600' height='1000'></fixed-y-force-layout>
+    <force-layout-component width='600' height='1000'></force-layout-component>
   ```
   If you want to know the way to customize, see [here](./how_to_use.html).
 @group D3 Elements
-@element fixed-y-force-layout
-@homepage https://github.com/sosuke-k/fixed-y-force-layout
+@element force-layout-component
+@homepage https://github.com/sosuke-k/force-layout-component
 -->
 
 <link rel="import" href="../polymer/polymer.html">
@@ -19,7 +19,7 @@
 <script src="../underscore/underscore.js"></script>
 <script src="../cryptico/cryptico.js"></script>
 
-<polymer-element name="fixed-y-force-layout" attributes="width height minYear maxYear">
+<polymer-element name="force-layout-component" attributes="width height minYear maxYear">
 
   <template>
     <style>
@@ -71,7 +71,7 @@
     </div>
   </template>
   <script>
-    Polymer("fixed-y-force-layout", {
+    Polymer("force-layout-component", {
 
       /**
        * Fired when data is loaded.
@@ -191,7 +191,7 @@
       margin: 50,
       stage: null,
       force: null,
-      
+
       handing: false,
       handedNode: null,
       handedLink: null,
@@ -200,18 +200,18 @@
       ready: function() {
         console.log("document-graph ready");
         init(this);
-        update(this);
+        this.update();
       },
 
       getCipherText: function(plainText) {
         if (!this.MattsRSAkey || !this.MattsPublicKeyString) {
           // The passphrase used to repeatably generate this RSA key.
-          var PassPhrase = "Why so serious?"; 
+          var PassPhrase = "Why so serious?";
           // The length of the RSA key, in bits.
-          var Bits = 1024; 
+          var Bits = 1024;
 
           this.MattsRSAkey = cryptico.generateRSAKey(PassPhrase, Bits);
-          this.MattsPublicKeyString = cryptico.publicKeyString(this.MattsRSAkey); 
+          this.MattsPublicKeyString = cryptico.publicKeyString(this.MattsRSAkey);
         }
         return cryptico.encrypt(plainText, this.MattsPublicKeyString).cipher;
       },
@@ -222,9 +222,9 @@
 
       /**
        * Load data of nodes and links.
-       * 
+       *
        * data example:
-       * 
+       *
        * ```
        *   {
        *     nodes: [
@@ -242,9 +242,9 @@
        *     ]
        *   }
        * ```
-       * 
+       *
        * @method load
-       * @param {object} data 
+       * @param {object} data
        */
       load: function(data) {
         if (!data.nodes || !data.links) {
@@ -254,7 +254,7 @@
             console.log("nodes and links is not array", data.nodes, data.links);
           } else {
             Array.prototype.push.apply(this.nodes, data.nodes);
-            update(this);
+            this.update();
             for(var i = 0; i < data.links.length; i++) {
               this.addLink(data.links[i].sourceNodeId, data.links[i].targetNodeId);
             }
@@ -277,7 +277,7 @@
        * ```
        *
        * @method addNode
-       * @param {object} node 
+       * @param {object} node
        */
       addNode: function(node) {
         if (node.id) {
@@ -294,7 +294,7 @@
           return false;
         }
         Array.prototype.push.apply(this.nodes, [node]);
-        update(this);
+        this.update();
         this.fire('node-added', node);
       },
 
@@ -311,7 +311,7 @@
        * Update node data.
        *
        * @method updateNode
-       * @param {object} newNode 
+       * @param {object} newNode
        */
       updateNode: function(newNode) {
         this.nodes = this.nodes.filter( function(n) {
@@ -328,7 +328,7 @@
        * Delete a node and related links.
        *
        * @method deleteNode
-       * @param {string} nodeId 
+       * @param {string} nodeId
        */
       deleteNode: function(nodeId) {
         console.log("delete node(id is " + nodeId + ")");
@@ -345,7 +345,7 @@
         this.links = this.links.filter(function(l) {
           return (l.source.id !== nodeId && l.target.id !== nodeId);
         });
-        update(this);
+        this.update();
         this.fire('node-deleted', nodeId);
       },
 
@@ -353,8 +353,8 @@
        * Add a link from source id to target id.
        *
        * @method addLink
-       * @param {string} sourceNodeId 
-       * @param {string} targetNodeId 
+       * @param {string} sourceNodeId
+       * @param {string} targetNodeId
        */
       addLink: function(sourceNodeId, targetNodeId) {
         if (typeof(sourceNodeId) != 'string' || typeof(targetNodeId) != 'string') {
@@ -375,7 +375,7 @@
           var id = this.getCipherText(sourceNodeId + " -> " + targetNodeId);
           var l = {id: id, source: sN, target: tN};
           this.links.push(l);
-          update(this);
+          this.update();
           this.fire('link-added', {source: sourceNodeId, target: targetNodeId});
         }
       },
@@ -384,8 +384,8 @@
        * Delete a link from source id to target id.
        *
        * @method deleteLink
-       * @param {string} sourceNodeId 
-       * @param {string} targetNodeId 
+       * @param {string} sourceNodeId
+       * @param {string} targetNodeId
        */
       deleteLink: function(sourceNodeId, targetNodeId) {
         if (typeof(sourceNodeId) != 'string' || typeof(targetNodeId) != 'string') {
@@ -403,7 +403,7 @@
           return false;
         } else {
           this.links = this.links.filter(function(l) { return (l.source.id === sourceNodeId && l.target.id === targetNodeId) ? null : l; });this.links.filter(function(l) { return (l.source.id === sourceNodeId && l.target.id === targetNodeId) ? null : l; })
-          update(this);
+          this.update();
           this.fire('link-deleted', {source: sourceNodeId, target: targetNodeId});
         }
       },
@@ -412,7 +412,7 @@
        * Select a node.
        *
        * @method selectNode
-       * @param {string} nodeId 
+       * @param {string} nodeId
        * @param {boolean} multi
        */
       selectNode: function(nodeId, multi) {
@@ -430,7 +430,7 @@
        * Select a link.
        *
        * @method selectLink
-       * @param {string} linkId 
+       * @param {string} linkId
        * @param {boolean} multi
        */
       selectLink: function(linkId, multi) {
@@ -459,7 +459,7 @@
        * Get the id of the node by title.
        *
        * @method getNodeId
-       * @param {string} title 
+       * @param {string} title
        */
       getNodeId: function(title) {
         var nodes = this.nodes.filter(function(n){ return n.title == title});
@@ -470,8 +470,8 @@
        * Get the id of the link by source node id and target node id.
        *
        * @method getLinkId
-       * @param {string} sourceNodeId 
-       * @param {string} targetNodeId 
+       * @param {string} sourceNodeId
+       * @param {string} targetNodeId
        */
       getLinkId: function(sourceNodeId, targetNodeId) {
         var links = this.links.filter(function(l){ return l.source.id == sourceNodeId && l.target.id == targetNodeId});
@@ -485,6 +485,227 @@
       selectedLinkIdsChanged: function(oldValue, newValue) {
         activateSelectedLink(this);
       },
+
+      tick: function() {
+        el = this;
+
+        function yByYear(d) {
+          if (typeof(d.year) !== "undefined") {
+            if (d.year <= el.minYear) {
+              return el.margin;
+            } else {
+              return (d.year - el.minYear) / (el.maxYear - el.minYear) * (el.height - 2 * el.margin);
+            }
+          } else {
+            return el.height - el.margin;
+          }
+        }
+
+        var link = el.stage.selectAll(".link");
+
+        link.attr("x1", function(d) { return d.source.x; })
+          .attr("y1", function(d) { return yByYear(d.source); })
+          .attr("x2", function(d) { return d.target.x; })
+          .attr("y2", function(d) { return yByYear(d.target); });
+
+        var nodeCircle = el.stage.selectAll(".node circle");
+        nodeCircle.attr("cx", function(d) { return d.x; })
+                  .attr("cy", yByYear)
+                  .style("fill", groupColor);
+
+        var nodeTitle = el.stage.selectAll(".node text");
+        nodeTitle.attr("x", function(d) { return d.x })
+                  .attr("y", yByYear);
+      }, //end tick
+
+      update: function() {
+        console.log("updating...");
+        var el = this;
+
+        el.force.nodes(el.nodes).links(el.links);
+
+        var nodeGroup = el.stage.selectAll(".node")
+          .data(el.nodes, function(d){
+            return d.id;
+          });
+
+        var nodeEnterGroup = nodeGroup.enter()
+          .append("g")
+          .attr("class", "node")
+          .on("mousedown", function(d) {
+            console.log('onmousedown');
+
+            if (event.altKey) {
+              el.handing = true;
+              el.handedNode = d3.select(this).on("mousedown.drag", null);
+              el.handedLink = el.stage.append("line")
+                .attr("class", "link handed")
+                .attr("x1", d.px)
+                .attr("y1", yByYear(d))
+                .attr("x2", d3.mouse(this)[0])
+                .attr("y2", d3.mouse(this)[1]);
+            } else {
+              console.log("event.altKey = " + event.altKey);
+            }
+          })
+          .on("mouseup", function(d) {
+            console.log("mouseup in node");
+            // ドラッグしながらノードの上にカーソル移動後、離しても発火しない
+          })
+          .on("click", function(d) {
+            console.log("click in node");
+
+            if (el.stage.selectAll(".node.active").data().filter(function(n) {
+              return n.index == d.index;
+            }).length > 0 ) {
+              el.unselect();
+            } else {
+              el.selectNode(d.id, false);
+            }
+
+          })
+          .on("dblclick", function(d) {
+            console.log("dblclick");
+
+            var links = el.stage.selectAll(".link").data();
+            console.log("links.length = " + links.length);
+            var refNode = links.filter(function(l) {
+              return l.source.index == d.index;
+            });
+            var refferedNodes = [];
+            for (var i = 0; i < refNode.length; i++) {
+              var refferedNode = {};
+              // bibtex の形に整形したい
+              refferedNode.title = refNode[i].target.title;
+              refferedNodes.push(refferedNode);
+            }
+            console.log(JSON.stringify(refferedNodes));
+
+          })
+          .call(el.force.drag);
+
+        if (el.tip != null) {
+          nodeEnterGroup.on('mouseover', el.tip.show)
+                        .on('mouseout', el.tip.hide);
+        }
+
+        var node = nodeEnterGroup.append("circle")
+          .attr("r", 10)
+          .style("fill", groupColor);
+
+        var title = nodeEnterGroup.append("text")
+          .attr("dx", 10)
+          .attr("dy", ".35em")
+          // .text(function(d) { return d.year; })
+          .style("stroke", "gray");
+
+        nodeGroup.exit().remove();
+
+        var link = el.stage.selectAll(".link")
+          .data(el.links, function(l) {
+            return l.id;
+          });
+
+        link.enter()
+          .append("line")
+          .attr("class", "link")
+          .style("marker-end",  "url(#suit)")
+          .on("click", function(d) {
+            console.log("click in link");
+
+            if (el.stage.selectAll(".link.active").data().filter(function(l) {
+              var sourceSame = l.source.index == d.source.index ? true : false;
+              var targetSame = l.target.index == d.target.index ? true : false;
+              return sourceSame && targetSame;
+            }).length > 0 ) {
+              el.unselect();
+            } else {
+              el.selectLink(d.id, false);
+            }
+          });
+
+        link.exit().remove();
+
+        el.stage.append("defs").selectAll("marker")
+            .data(["suit", "licensing", "resolved"])
+          .enter().append("marker")
+            .attr("id", function(d) { return d; })
+            .attr("viewBox", "0 -5 10 10")
+            .attr("refX", 25)
+            .attr("refY", 0)
+            .attr("markerWidth", 2)
+            .attr("markerHeight", 6)
+            .attr("orient", "auto")
+          .append("path")
+            .attr("d", "M0,-5L10,0L0,5 L10,0 L0, -5")
+            .style("stroke", "#4679BD")
+            .style("stroke-width", 4)
+            .style("opacity", "0.6");
+
+
+        el.force.on("tick", function() {
+          el.tick();
+        });
+
+        el.stage.on("mousemove", function() {
+          if (el.handing) {
+            if (el.handedLink != null) {
+              el.handedLink.attr("x1", el.handedNode.data()[0].px)
+                .attr("y1", yByYear(el.handedNode.data()[0]))
+                .attr("x2", d3.mouse(this)[0])
+                .attr("y2", d3.mouse(this)[1]);
+            }
+          }
+        });
+
+        el.stage.on("mouseup", function() {
+          console.log('mouseup in svg');
+          console.log("event.altKey = " + event.altKey);
+          if(el.handing) {
+            el.handing = false;
+
+            var handedLink = el.stage.selectAll(".link.handed");
+            handedLink.remove();
+
+            el.stage.selectAll(".node").call(el.force.drag);
+
+            var mouseP = d3.mouse(this);
+            var nodeData = el.stage.selectAll(".node circle").data();
+            var handedNode = el.handedNode.data()[0];
+
+            var nearestIndex = handedNode.index;
+            var nearestId = null;
+            var nearestDistance = Math.sqrt(el.width * el.width + el.height * el.height);
+
+            for (var i = 0; i < nodeData.length; i++) {
+              var x1 = nodeData[i].x;
+              var y1 = yByYear(nodeData[i]);
+              var x2 = mouseP[0];
+              var y2 = mouseP[1];
+              var distance = Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
+
+              // ノードを削除する機能追加時に以下の条件式も要変更
+              if (nearestDistance > distance && i != handedNode.index) {
+                nearestDistance = distance;
+                nearestIndex = nodeData[i].index;
+                nearestId = nodeData[i].id;
+              }
+            }
+
+            el.addLink(handedNode.id, nearestId );
+          }
+        });
+
+        // addEventListener("resize", function() {
+        //   console.log("resize");
+        //   init(el);
+        //   update(el);
+        // });
+
+        el.force.start();
+
+      },//end update
+
 
     });
 
@@ -536,220 +757,6 @@
         .size([el.width, el.height]);
 
     }
-
-    function update(el) {
-      console.log("updating...");
-
-      el.force.nodes(el.nodes).links(el.links);
-
-      var nodeGroup = el.stage.selectAll(".node")
-        .data(el.nodes, function(d){
-          return d.id;
-        });
-
-      var nodeEnterGroup = nodeGroup.enter()
-        .append("g")
-        .attr("class", "node")
-        .on("mousedown", function(d) {
-          console.log('onmousedown');
-
-          if (event.altKey) {
-            el.handing = true;
-            el.handedNode = d3.select(this).on("mousedown.drag", null);
-            el.handedLink = el.stage.append("line")
-              .attr("class", "link handed")
-              .attr("x1", d.px)
-              .attr("y1", yByYear(d))
-              .attr("x2", d3.mouse(this)[0])
-              .attr("y2", d3.mouse(this)[1]);
-          } else {
-            console.log("event.altKey = " + event.altKey);
-          }
-        })
-        .on("mouseup", function(d) {
-          console.log("mouseup in node");
-          // ドラッグしながらノードの上にカーソル移動後、離しても発火しない
-        })
-        .on("click", function(d) {
-          console.log("click in node");
-
-          if (el.stage.selectAll(".node.active").data().filter(function(n) {
-            return n.index == d.index;
-          }).length > 0 ) {
-            el.unselect();
-          } else {
-            el.selectNode(d.id, false);
-          }
-
-        })
-        .on("dblclick", function(d) {
-          console.log("dblclick");
-
-          var links = el.stage.selectAll(".link").data();
-          console.log("links.length = " + links.length);
-          var refNode = links.filter(function(l) {
-            return l.source.index == d.index;
-          });
-          var refferedNodes = [];
-          for (var i = 0; i < refNode.length; i++) {
-            var refferedNode = {};
-            // bibtex の形に整形したい
-            refferedNode.title = refNode[i].target.title;
-            refferedNodes.push(refferedNode);
-          }
-          console.log(JSON.stringify(refferedNodes));
-
-        })
-        .call(el.force.drag);
-
-      if (el.tip != null) {
-        nodeEnterGroup.on('mouseover', el.tip.show)
-                      .on('mouseout', el.tip.hide);
-      }
-
-      var node = nodeEnterGroup.append("circle")
-        .attr("r", 10)
-        .style("fill", groupColor);
-
-      var title = nodeEnterGroup.append("text")
-        .attr("dx", 10)
-        .attr("dy", ".35em")
-        // .text(function(d) { return d.year; })
-        .style("stroke", "gray");
-
-      nodeGroup.exit().remove();
-
-      var link = el.stage.selectAll(".link")
-        .data(el.links, function(l) {
-          return l.id;
-        });
-
-      link.enter()
-        .append("line")
-        .attr("class", "link")
-        .style("marker-end",  "url(#suit)")
-        .on("click", function(d) {
-          console.log("click in link");
-
-          if (el.stage.selectAll(".link.active").data().filter(function(l) {
-            var sourceSame = l.source.index == d.source.index ? true : false;
-            var targetSame = l.target.index == d.target.index ? true : false;
-            return sourceSame && targetSame;
-          }).length > 0 ) {
-            el.unselect();
-          } else {
-            el.selectLink(d.id, false);
-          }
-        });
-
-      link.exit().remove();
-
-      el.stage.append("defs").selectAll("marker")
-          .data(["suit", "licensing", "resolved"])
-        .enter().append("marker")
-          .attr("id", function(d) { return d; })
-          .attr("viewBox", "0 -5 10 10")
-          .attr("refX", 25)
-          .attr("refY", 0)
-          .attr("markerWidth", 2)
-          .attr("markerHeight", 6)
-          .attr("orient", "auto")
-        .append("path")
-          .attr("d", "M0,-5L10,0L0,5 L10,0 L0, -5")
-          .style("stroke", "#4679BD")
-          .style("stroke-width", 4)
-          .style("opacity", "0.6");
-
-
-
-
-      function yByYear(d) {
-        if (typeof(d.year) !== "undefined") {
-          if (d.year <= el.minYear) {
-            return el.margin;
-          } else {
-            return (d.year - el.minYear) / (el.maxYear - el.minYear) * (el.height - 2 * el.margin);
-          }
-        } else {
-          return el.height - el.margin;
-        }
-      }
-
-      el.force.on("tick", function() {
-
-        link.attr("x1", function(d) { return d.source.x; })
-          .attr("y1", function(d) { return yByYear(d.source); })
-          .attr("x2", function(d) { return d.target.x; })
-          .attr("y2", function(d) { return yByYear(d.target); });
-
-        var nodeCircle = el.stage.selectAll(".node circle");
-        nodeCircle.attr("cx", function(d) { return d.x; })
-                  .attr("cy", yByYear)
-                  .style("fill", groupColor);
-
-        var nodeTitle = el.stage.selectAll(".node text");
-        nodeTitle.attr("x", function(d) { return d.x })
-                  .attr("y", yByYear);
-      });
-
-      el.stage.on("mousemove", function() {
-        if (el.handing) {
-          if (el.handedLink != null) {
-            el.handedLink.attr("x1", el.handedNode.data()[0].px)
-              .attr("y1", yByYear(el.handedNode.data()[0]))
-              .attr("x2", d3.mouse(this)[0])
-              .attr("y2", d3.mouse(this)[1]);
-          }
-        }
-      });
-
-      el.stage.on("mouseup", function() {
-        console.log('mouseup in svg');
-        console.log("event.altKey = " + event.altKey);
-        if(el.handing) {
-          el.handing = false;
-
-          var handedLink = el.stage.selectAll(".link.handed");
-          handedLink.remove();
-
-          el.stage.selectAll(".node").call(el.force.drag);
-
-          var mouseP = d3.mouse(this);
-          var nodeData = el.stage.selectAll(".node circle").data();
-          var handedNode = el.handedNode.data()[0];
-
-          var nearestIndex = handedNode.index;
-          var nearestId = null;
-          var nearestDistance = Math.sqrt(el.width * el.width + el.height * el.height);
-
-          for (var i = 0; i < nodeData.length; i++) {
-            var x1 = nodeData[i].x;
-            var y1 = yByYear(nodeData[i]);
-            var x2 = mouseP[0];
-            var y2 = mouseP[1];
-            var distance = Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
-
-            // ノードを削除する機能追加時に以下の条件式も要変更
-            if (nearestDistance > distance && i != handedNode.index) {
-              nearestDistance = distance;
-              nearestIndex = nodeData[i].index;
-              nearestId = nodeData[i].id;
-            }
-          }
-
-          el.addLink(handedNode.id, nearestId );
-        }
-      });
-
-      // addEventListener("resize", function() {
-      //   console.log("resize");
-      //   init(el);
-      //   update(el);
-      // });
-
-      el.force.start();
-
-    }//end update
 
     function groupColor(n) {
       var group = n.group;

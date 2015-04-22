@@ -1,13 +1,14 @@
 <!doctype html>
 <html>
 <head>
-  <title>fixed-y-force-layout</title>
-  
+  <title>force-layout-component</title>
+
   <link rel="import" href="../polymer/polymer.html">
   <link rel="import" href="../core-drawer-panel/core-drawer-panel.html">
   <link rel="import" href="../core-pages/core-pages.html">
   <link rel="import" href="../paper-button/paper-button.html">
-  <link rel="import" href="fixed-y-force-layout.html">
+  <link rel="import" href="force-layout-component.html">
+  <link rel="import" href="../prism-js/prism-js.html">
 
   <script src="https://rawgit.com/markknol/console-log-viewer/gh-pages/console-log-viewer.js"></script>
   <script>
@@ -16,7 +17,7 @@
       div.className = "bottom-aligned";
     };
   </script>
-  
+
   <style type="text/css">
     html , body {
       width: 100%;
@@ -38,7 +39,7 @@
 
 <polymer-element name="demo-component">
   <template>
-    <style>    
+    <style>
       :host {
         position: absolute;
         width: 100%;
@@ -108,7 +109,7 @@
             </core-pages>
           </section>
           <section id="section3" main style="overflow: scroll;">
-            <fixed-y-force-layout id='force' width='{{graphWidth}}' height='1000'></fixed-y-force-layout>
+            <force-layout-component id='force' width='{{graphWidth}}' height='1000'></force-layout-component>
           </section>
         </core-drawer-panel>
       </section>
@@ -147,6 +148,7 @@
             }
           ]
         };
+        // console.log (this.$.force.toString());
         this.$.force.load(data);
       },
 
@@ -196,11 +198,60 @@
 <body unresolved>
 
   <demo-component>
-    <div class='code_container' add_node_code><script src="http://gist-it.appspot.com/github/sosuke-k/fixed-y-force-layout/blob/master/demo.html?slice=144:152"></script></div>
-    <div class='code_container' update_node_code><script src="http://gist-it.appspot.com/github/sosuke-k/fixed-y-force-layout/blob/master/demo.html?slice=153:163"></script></div>
-    <div class='code_container' delete_node_code><script src="http://gist-it.appspot.com/github/sosuke-k/fixed-y-force-layout/blob/master/demo.html?slice=164:172"></script></div>
-    <div class='code_container' add_link_code><script src="http://gist-it.appspot.com/github/sosuke-k/fixed-y-force-layout/blob/master/demo.html?slice=173:177"></script></div>
-    <div class='code_container' delete_link_code><script src="http://gist-it.appspot.com/github/sosuke-k/fixed-y-force-layout/blob/master/demo.html?slice=178:182"></script></div>
+    <div class='code_container' add_node_code>
+      <prism-js language="javascript" linehighlight="2-6" escape="true">
+        addButton: function() {
+          this.$.force.addNode({
+            id: 'b',
+            title: 'Title B',
+            year: 2001
+          });
+          this.selected = 0;
+        },
+      </prism-js>
+    </div>
+    <div class='code_container' update_node_code>
+      <prism-js language="javascript" linehighlight="2-8" escape="true">
+        updateButton: function() {
+          var id = this.$.force.getNodeId("Title B");
+          var node = {
+            id: id,
+            title: "Title BBB",
+            year: 2004
+          };
+          this.$.force.updateNode(node);
+          this.selected = 1;
+        },
+      </prism-js>
+    </div>
+    <div class='code_container' delete_node_code>
+      <prism-js language="javascript" linehighlight="2-6" escape="true">
+        deleteButton: function() {
+          var node = this.$.force.nodes.filter(function(n){return n.title == "Title B"})[0];
+          if (typeof(node) == "object") {
+            console.log("delete node of '" + node.id + "'");
+            this.$.force.deleteNode(node.id);
+          }
+          this.selected = 2;
+        },
+      </prism-js>
+    </div>
+    <div class='code_container' add_link_code>
+      <prism-js language="javascript" linehighlight="2" escape="true">
+        addLinkButton: function() {
+          this.$.force.addLink("c", "a");
+          this.selected = 3;
+        },
+      </prism-js>
+    </div>
+    <div class='code_container' delete_link_code>
+      <prism-js language="javascript" linehighlight="2" escape="true">
+        deleteLinkButton: function() {
+          this.$.force.deleteLink("c", "a");
+          this.selected = 4;
+        },
+      </prism-js>
+    </div>
   </demo-component>
 
 </body>
