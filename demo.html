@@ -90,11 +90,31 @@
     <core-drawer-panel transition id="core_drawer_panel" touch-action drawerWidth='{{leftWidth}}px'>
       <section id="section" drawer style="overflow: scroll;">
         <div layout vertical center>
-          <paper-button id='add_node' on-tap="{{addButton}}">ADD NODE</paper-button>
-          <paper-button id='update_node' on-tap="{{updateButton}}">UPDATE NODE</paper-button>
-          <paper-button id='delete_node' on-tap="{{deleteButton}}">DELETE NODE</paper-button>
-          <paper-button id='add_link' on-tap="{{addLinkButton}}">ADD LINK</paper-button>
-          <paper-button id='delete_link' on-tap="{{deleteLinkButton}}">DELETE LINK</paper-button>
+          <paper-button id='add_node'
+            on-tap="{{addNodeButton}}"
+            on-mouseover="{{overAddNodeButton}}">
+              ADD NODE
+          </paper-button>
+          <paper-button id='update_node'
+            on-tap="{{updateNodeButton}}"
+            on-mouseover="{{overUpdateNodeButton}}">
+              UPDATE NODE
+          </paper-button>
+          <paper-button id='delete_node'
+            on-tap="{{deleteNodeButton}}"
+            on-mouseover="{{overDeleteNodeButton}}">
+              DELETE NODE
+          </paper-button>
+          <paper-button id='add_link'
+            on-tap="{{addLinkButton}}"
+            on-mouseover="{{overAddLinkButton}}">
+              ADD LINK
+          </paper-button>
+          <paper-button id='delete_link'
+            on-tap="{{deleteLinkButton}}"
+            on-mouseover="{{overDeleteLinkButton}}">
+              DELETE LINK
+          </paper-button>
         </div>
       </section>
       <section id="section1" main>
@@ -109,7 +129,7 @@
             </core-pages>
           </section>
           <section id="section3" main style="overflow: scroll;">
-            <force-layout-component id='force' width='{{graphWidth}}' height='1000'></force-layout-component>
+            <force-layout-component id='force' width='400' height='400'></force-layout-component>
           </section>
         </core-drawer-panel>
       </section>
@@ -122,10 +142,8 @@
 
       leftWidth: 170,
       rightWidth: 500,
-      graphWidth: 700,
 
       ready: function() {
-        this.graphWidth = window.innerWidth - this.leftWidth - this.rightWidth;
 
         var data = {
           nodes: [
@@ -152,16 +170,23 @@
         this.$.force.load(data);
       },
 
-      addButton: function() {
+      overAddNodeButton: function() {
+        this.selected = 0;
+      },
+
+      addNodeButton: function() {
         this.$.force.addNode({
           id: 'b',
           title: 'Title B',
           year: 2001
         });
-        this.selected = 0;
       },
 
-      updateButton: function() {
+      overUpdateNodeButton: function() {
+        this.selected = 1;
+      },
+
+      updateNodeButton: function() {
         var id = this.$.force.getNodeId("Title B");
         var node = {
           id: id,
@@ -169,26 +194,34 @@
           year: 2004
         };
         this.$.force.updateNode(node);
-        this.selected = 1;
       },
 
-      deleteButton: function() {
+      overDeleteNodeButton: function() {
+        this.selected = 2;
+      },
+
+      deleteNodeButton: function() {
         var node = this.$.force.nodes.filter(function(n){return n.title == "Title B"})[0];
         if (typeof(node) == "object") {
           console.log("delete node of '" + node.id + "'");
           this.$.force.deleteNode(node.id);
         }
-        this.selected = 2;
+      },
+
+      overAddLinkButton: function() {
+        this.selected = 3;
       },
 
       addLinkButton: function() {
         this.$.force.addLink("c", "a");
-        this.selected = 3;
+      },
+
+      overDeleteLinkButton: function() {
+        this.selected = 4;
       },
 
       deleteLinkButton: function() {
         this.$.force.deleteLink("c", "a");
-        this.selected = 4;
       },
 
     });
