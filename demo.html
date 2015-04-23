@@ -156,13 +156,11 @@
           nodes: [
             {
               id: 'a',
-              title: 'Title A',
-              year: 2000
+              title: 'Title A'
             },
             {
               id: 'c',
-              title: 'Title C',
-              year: 2002
+              title: 'Title C'
             }
           ],
           links: [
@@ -183,8 +181,7 @@
       addNodeButton: function() {
         this.$.force.addNode({
           id: 'b',
-          title: 'Title B',
-          year: 2001
+          title: 'Title B'
         });
       },
 
@@ -196,8 +193,7 @@
         var id = this.$.force.getNodeId("Title B");
         var node = {
           id: id,
-          title: "Title BBB",
-          year: 2004
+          title: "Title BBB"
         };
         this.$.force.updateNode(node);
       },
@@ -238,19 +234,17 @@
 
   <demo-component>
     <div class='code_container' graph_config>
-      <prism-js language="javascript" linehighlight="24" escape="true">
+      <prism-js language="javascript" linehighlight="22" escape="true">
         ready: function() {
           var data = {
             nodes: [
               {
                 id: 'a',
-                title: 'Title A',
-                year: 2000
+                title: 'Title A'
               },
               {
                 id: 'c',
-                title: 'Title C',
-                year: 2002
+                title: 'Title C'
               }
             ],
             links: [
@@ -266,24 +260,22 @@
       </prism-js>
     </div>
     <div class='code_container' add_node_code>
-      <prism-js language="javascript" linehighlight="2-6" escape="true">
+      <prism-js language="javascript" linehighlight="2-5" escape="true">
         addNodeButton: function() {
           this.$.force.addNode({
             id: 'b',
-            title: 'Title B',
-            year: 2001
+            title: 'Title B'
           });
         },
       </prism-js>
     </div>
     <div class='code_container' update_node_code>
-      <prism-js language="javascript" linehighlight="2-8" escape="true">
+      <prism-js language="javascript" linehighlight="2-7" escape="true">
         updateNodeButton: function() {
           var id = this.$.force.getNodeId("Title B");
           var node = {
             id: id,
-            title: "Title BBB",
-            year: 2004
+            title: "Title BBB"
           };
           this.$.force.updateNode(node);
         },

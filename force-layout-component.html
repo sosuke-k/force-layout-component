@@ -199,7 +199,7 @@
 
       ready: function() {
         console.log("document-graph ready");
-        init(this);
+        this.init();
         this.update();
       },
 
@@ -486,36 +486,50 @@
         activateSelectedLink(this);
       },
 
+      init: function() {
+        el = this;
+        el.stage = d3.select(el.$.mysvg);
+
+        try {
+          el.tip = d3.tip()
+            .attr('class', 'd3-tip')
+            .offset([-10, 0])
+            .html(function (d) {
+              return  d.title;
+            });
+          el.stage.call(el.tip);
+        } catch(e) {
+          console.log(e);
+        }
+
+        el.force = d3.layout.force()
+          .nodes(el.nodes)
+          .links(el.links)
+          .charge(-200)
+          .linkDistance(200)
+          .size([el.width, el.height]);
+
+      },
+
       tick: function() {
         el = this;
 
-        function yByYear(d) {
-          if (typeof(d.year) !== "undefined") {
-            if (d.year <= el.minYear) {
-              return el.margin;
-            } else {
-              return (d.year - el.minYear) / (el.maxYear - el.minYear) * (el.height - 2 * el.margin);
-            }
-          } else {
-            return el.height - el.margin;
-          }
+        if (!el.handing) {
+          var link = el.stage.selectAll(".link");
+          link.attr("x1", function(d) { return d.source.x; })
+            .attr("y1", function(d) { return d.source.y; })
+            .attr("x2", function(d) { return d.target.x; })
+            .attr("y2", function(d) { return d.target.y; });
         }
-
-        var link = el.stage.selectAll(".link");
-
-        link.attr("x1", function(d) { return d.source.x; })
-          .attr("y1", function(d) { return yByYear(d.source); })
-          .attr("x2", function(d) { return d.target.x; })
-          .attr("y2", function(d) { return yByYear(d.target); });
-
         var nodeCircle = el.stage.selectAll(".node circle");
         nodeCircle.attr("cx", function(d) { return d.x; })
-                  .attr("cy", yByYear)
+                  .attr("cy", function(d) { return d.y; })
                   .style("fill", groupColor);
 
         var nodeTitle = el.stage.selectAll(".node text");
         nodeTitle.attr("x", function(d) { return d.x })
-                  .attr("y", yByYear);
+                  .attr("y", function(d) { return d.y });
+
       }, //end tick
 
       update: function() {
@@ -541,7 +555,7 @@
               el.handedLink = el.stage.append("line")
                 .attr("class", "link handed")
                 .attr("x1", d.px)
-                .attr("y1", yByYear(d))
+                .attr("y1", d.py) //yByYear(d)) should let this function overridable!
                 .attr("x2", d3.mouse(this)[0])
                 .attr("y2", d3.mouse(this)[1]);
             } else {
@@ -651,7 +665,7 @@
           if (el.handing) {
             if (el.handedLink != null) {
               el.handedLink.attr("x1", el.handedNode.data()[0].px)
-                .attr("y1", yByYear(el.handedNode.data()[0]))
+                .attr("y1", el.handedNode.data()[0].py) //yByYear(el.handedNode.data()[0])) should let this function overridable
                 .attr("x2", d3.mouse(this)[0])
                 .attr("y2", d3.mouse(this)[1]);
             }
@@ -679,7 +693,7 @@
 
             for (var i = 0; i < nodeData.length; i++) {
               var x1 = nodeData[i].x;
-              var y1 = yByYear(nodeData[i]);
+              var y1 = nodeData[i].y; //yByYear(nodeData[i]); should let this function overridable
               var x2 = mouseP[0];
               var y2 = mouseP[1];
               var distance = Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
@@ -706,57 +720,7 @@
 
       },//end update
 
-
     });
-
-    function init(el) {
-      el.stage = d3.select(el.$.mysvg);
-
-      try {
-        el.tip = d3.tip()
-          .attr('class', 'd3-tip')
-          .offset([-10, 0])
-          .html(function (d) {
-            return  d.title;
-          });
-        el.stage.call(el.tip);
-      } catch(e) {
-        console.log(e);
-      }
-
-      var color1 = "#eceff1";
-      var color2 = "#cfd8dc";
-
-      el.stage.append("rect")
-        .attr("width", el.width)
-        .attr("height", el.height)
-        .style("fill", color1);
-
-      var years = el.maxYear - el.minYear;
-      var rectHeight = (el.height - el.margin * 2) / years;
-      for(var i = 0; i < years; i++) {
-        var color = color1
-        if (i % 2 == 1) color = color2;
-        el.stage.append("rect")
-          .attr("width", el.width)
-          .attr("height", rectHeight)
-          .attr("y", rectHeight * i + el.margin - rectHeight / 2)
-          .style("fill", color);
-        el.stage.append("text")
-          .attr("x", 10)
-          .attr("y", rectHeight * i + el.margin)
-          .text(el.minYear + i + 1)
-          .style("fill", "gray");
-      }
-
-      el.force = d3.layout.force()
-        .nodes(el.nodes)
-        .links(el.links)
-        .charge(-200)
-        .linkDistance(200)
-        .size([el.width, el.height]);
-
-    }
 
     function groupColor(n) {
       var group = n.group;
