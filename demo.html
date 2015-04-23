@@ -84,7 +84,12 @@
       #section3 {
         height: 100%;
         box-sizing: border-box;
-        background-color: rgb(221, 221, 221);
+        background-color: white;
+      }
+      #demo_container {
+        width: 400px;
+        margin: 50px auto;
+        border: dotted 1px gray;
       }
     </style>
     <core-drawer-panel transition id="core_drawer_panel" touch-action drawerWidth='{{leftWidth}}px'>
@@ -121,6 +126,7 @@
         <core-drawer-panel transition id="core_drawer_panel1" rightDrawer touch-action drawerWidth='{{rightWidth}}px'>
           <section id="section2" drawer style="overflow: scroll;">
             <core-pages selected="{{selected}}">
+              <div><content select="[graph_config]"></content></div>
               <div><content select="[add_node_code]"></content></div>
               <div><content select="[update_node_code]"></content></div>
               <div><content select="[delete_node_code]"></content></div>
@@ -129,7 +135,9 @@
             </core-pages>
           </section>
           <section id="section3" main style="overflow: scroll;">
-            <force-layout-component id='force' width='400' height='400'></force-layout-component>
+            <div id="demo_container">
+              <force-layout-component id='force' width='400' height='400'></force-layout-component>
+            </div>
           </section>
         </core-drawer-panel>
       </section>
@@ -144,7 +152,6 @@
       rightWidth: 500,
 
       ready: function() {
-
         var data = {
           nodes: [
             {
@@ -165,13 +172,12 @@
               targetNodeId: 'a'
             }
           ]
-        };
-        // console.log (this.$.force.toString());
+        }; 
         this.$.force.load(data);
       },
 
       overAddNodeButton: function() {
-        this.selected = 0;
+        this.selected = 1;
       },
 
       addNodeButton: function() {
@@ -183,7 +189,7 @@
       },
 
       overUpdateNodeButton: function() {
-        this.selected = 1;
+        this.selected = 2;
       },
 
       updateNodeButton: function() {
@@ -197,7 +203,7 @@
       },
 
       overDeleteNodeButton: function() {
-        this.selected = 2;
+        this.selected = 3;
       },
 
       deleteNodeButton: function() {
@@ -209,7 +215,7 @@
       },
 
       overAddLinkButton: function() {
-        this.selected = 3;
+        this.selected = 4;
       },
 
       addLinkButton: function() {
@@ -217,7 +223,7 @@
       },
 
       overDeleteLinkButton: function() {
-        this.selected = 4;
+        this.selected = 5;
       },
 
       deleteLinkButton: function() {
@@ -231,21 +237,48 @@
 <body unresolved>
 
   <demo-component>
+    <div class='code_container' graph_config>
+      <prism-js language="javascript" linehighlight="24" escape="true">
+        ready: function() {
+          var data = {
+            nodes: [
+              {
+                id: 'a',
+                title: 'Title A',
+                year: 2000
+              },
+              {
+                id: 'c',
+                title: 'Title C',
+                year: 2002
+              }
+            ],
+            links: [
+              {
+                id: 'ac',
+                sourceNodeId: 'c',
+                targetNodeId: 'a'
+              }
+            ]
+          };
+          this.$.force.load(data);
+        },
+      </prism-js>
+    </div>
     <div class='code_container' add_node_code>
       <prism-js language="javascript" linehighlight="2-6" escape="true">
-        addButton: function() {
+        addNodeButton: function() {
           this.$.force.addNode({
             id: 'b',
             title: 'Title B',
             year: 2001
           });
-          this.selected = 0;
         },
       </prism-js>
     </div>
     <div class='code_container' update_node_code>
       <prism-js language="javascript" linehighlight="2-8" escape="true">
-        updateButton: function() {
+        updateNodeButton: function() {
           var id = this.$.force.getNodeId("Title B");
           var node = {
             id: id,
@@ -253,19 +286,17 @@
             year: 2004
           };
           this.$.force.updateNode(node);
-          this.selected = 1;
         },
       </prism-js>
     </div>
     <div class='code_container' delete_node_code>
       <prism-js language="javascript" linehighlight="2-6" escape="true">
-        deleteButton: function() {
+        deleteNodeButton: function() {
           var node = this.$.force.nodes.filter(function(n){return n.title == "Title B"})[0];
           if (typeof(node) == "object") {
             console.log("delete node of '" + node.id + "'");
             this.$.force.deleteNode(node.id);
           }
-          this.selected = 2;
         },
       </prism-js>
     </div>
@@ -273,7 +304,6 @@
       <prism-js language="javascript" linehighlight="2" escape="true">
         addLinkButton: function() {
           this.$.force.addLink("c", "a");
-          this.selected = 3;
         },
       </prism-js>
     </div>
@@ -281,7 +311,6 @@
       <prism-js language="javascript" linehighlight="2" escape="true">
         deleteLinkButton: function() {
           this.$.force.deleteLink("c", "a");
-          this.selected = 4;
         },
       </prism-js>
     </div>
