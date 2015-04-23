@@ -7,14 +7,6 @@
   <link rel="import" href="fixed-y-force-layout.html">
   <link rel="import" href="../prism-js/prism-js.html">
 
-  <script src="https://rawgit.com/markknol/console-log-viewer/gh-pages/console-log-viewer.js"></script>
-  <script>
-    window.onload = function() {
-      var div = document.getElementById("debug_console");
-      div.className = "bottom-aligned";
-    };
-  </script>
-
   <style type="text/css">
     html , body {
       width: 100%;
@@ -50,7 +42,7 @@
       }
     </style>
     <div id="demo_container">
-      <fixed-y-force-layout id='force' width='400' height='400'></fixed-y-force-layout>
+      <fixed-y-force-layout id='force' width='400' height='1000'></fixed-y-force-layout>
     </div>
   </template>
   <script>
@@ -64,11 +56,13 @@
           nodes: [
             {
               id: 'a',
-              title: 'Title A'
+              title: 'Title A',
+              year: 1998
             },
             {
               id: 'c',
-              title: 'Title C'
+              title: 'Title C',
+              year: 2001
             }
           ],
           links: [
@@ -87,32 +81,6 @@
 
 <body unresolved>
 
-  <div class='code_container'>
-    <prism-js language="javascript" linehighlight="22" escape="true">
-      ready: function() {
-        var data = {
-          nodes: [
-            {
-              id: 'a',
-              title: 'Title A'
-            },
-            {
-              id: 'c',
-              title: 'Title C'
-            }
-          ],
-          links: [
-            {
-              id: 'ac',
-              sourceNodeId: 'c',
-              targetNodeId: 'a'
-            }
-          ]
-        };
-        this.$.force.load(data);
-      },
-    </prism-js>
-  </div>
   <demo-component>
   </demo-component>
 

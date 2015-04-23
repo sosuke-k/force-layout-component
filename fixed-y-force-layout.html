@@ -28,20 +28,46 @@
         width: {{width}}px;
         height: {{height}}px;
       }
-      h1 {
+      #background {
         margin: 0;
-        background-color: blue;
+        background-color: white;
       }
-      div#force_layout, h1 {
+      div#force_layout, #background {
         position: absolute;
         top: 0;
         left: 0;
         width: {{width}}px;
         height: {{height}}px;
       }
+      #background ol {
+        display: block;
+        width: 100%;
+        margin: {{margin}}px 0px;
+        padding: 0;
+      }
+      li.year {
+        list-style: none;
+        display: block;
+        height: {{yearHeight}}px;
+      }
+      li.year:nth-child(2n+1) {
+        background-color: rgb(236, 239, 241);
+      }
+      li.year:nth-child(2n) {
+        background-color: rgb(207, 216, 220);
+      }
+      .year span {
+        font-size: 0.5em;
+      }
     </style>
     <div id='container'>
-      <h1>fixed-y-force-layout</h1>
+      <div id="background">
+        <ol>
+          <template repeat="{{year in years}}">
+            <li class="year"><span>{{year}}</span></li>
+          </template>
+        </ol>
+      </div>
       <div id="force_layout"><shadow></shadow></div>
     </div>
   </template>
@@ -66,13 +92,34 @@
        */
       maxYear: 2015,
 
+      margin: 50,
+      yearHeight: 20,
+      years: [],
+
       ready: function() {
         this.super();
+        for(var i = 0; i <= (this.maxYear - this.minYear); i++) {
+          this.years.push(this.minYear + i);
+        }
+        this.yearHeight = (this.height - this.margin * 2) / this.years.length;
       },
 
       init: function() {
         console.log("init in fixed-y-force-layout");
         this.super();
+      },
+
+      getYByNode: function(node) {
+        el = this;
+        if (typeof(node.year) !== "undefined") {
+          if (node.year < el.minYear) {
+            return el.margin / 2;
+          } else {
+            return ((node.year - el.minYear + 1) + 1/2) * el.yearHeight;
+          }
+        } else {
+          return el.height - el.margin / 2;
+        }
       }
 
     });  
