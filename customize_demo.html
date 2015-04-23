@@ -1,0 +1,88 @@
+<!doctype html>
+<html>
+<head>
+  <title>force-layout-component</title>
+
+  <link rel="import" href="../polymer/polymer.html">
+  <link rel="import" href="fixed-y-force-layout.html">
+  <link rel="import" href="../prism-js/prism-js.html">
+
+  <style type="text/css">
+    html , body {
+      width: 100%;
+      height: 100%;
+      -webkit-box-sizing: border-box;
+      -moz-box-sizing: border-box;
+      box-sizing: border-box;
+      margin:0;
+      padding:0 0;
+    }
+    body {
+      background: #263238;
+    }
+    .code_container {
+      margin: 20px;
+    }
+  </style>
+</head>
+
+<polymer-element name="demo-component">
+  <template>
+    <style>
+      :host {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        box-sizing: border-box;
+      }
+      #demo_container {
+        width: 400px;
+        margin: 50px auto;
+        border: dotted 1px gray;
+      }
+    </style>
+    <div id="demo_container">
+      <fixed-y-force-layout id='force' width='400' height='1000'></fixed-y-force-layout>
+    </div>
+  </template>
+  <script>
+    Polymer("demo-component", {
+
+      leftWidth: 170,
+      rightWidth: 500,
+
+      ready: function() {
+        var data = {
+          nodes: [
+            {
+              id: 'a',
+              title: 'Title A',
+              year: 1998
+            },
+            {
+              id: 'c',
+              title: 'Title C',
+              year: 2001
+            }
+          ],
+          links: [
+            {
+              id: 'ac',
+              sourceNodeId: 'c',
+              targetNodeId: 'a'
+            }
+          ]
+        }; 
+        this.$.force.load(data);
+      }
+    });
+  </script>
+</polymer-element>
+
+<body unresolved>
+
+  <demo-component>
+  </demo-component>
+
+</body>
+</html>

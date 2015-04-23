@@ -1,0 +1,127 @@
+<!--
+  `fixed-y-force-layout` is a component displaying Special Force Layout of D3.
+  ```
+    <fixed-y-force-layout width='600' height='1000'></fixed-y-force-layout>
+  ```
+  If you want to know the way to customize, see [here](./how_to_use.html).
+@group D3 Elements
+@element fixed-y-force-layout
+@extends force-layout-component
+@homepage https://github.com/sosuke-k/force-layout-component
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="force-layout-component.html">
+
+<polymer-element
+  name="fixed-y-force-layout"
+  attributes="minYear maxYear"
+  extends="force-layout-component">
+
+  <template>
+    <style>
+      :host {
+        -webkit-user-select: none;
+      }
+      div#container {
+        position: relative;
+        width: {{width}}px;
+        height: {{height}}px;
+      }
+      #background {
+        margin: 0;
+        background-color: white;
+      }
+      div#force_layout, #background {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: {{width}}px;
+        height: {{height}}px;
+      }
+      #background ol {
+        display: block;
+        width: 100%;
+        margin: {{margin}}px 0px;
+        padding: 0;
+      }
+      li.year {
+        list-style: none;
+        display: block;
+        height: {{yearHeight}}px;
+      }
+      li.year:nth-child(2n+1) {
+        background-color: rgb(236, 239, 241);
+      }
+      li.year:nth-child(2n) {
+        background-color: rgb(207, 216, 220);
+      }
+      .year span {
+        font-size: 0.5em;
+      }
+    </style>
+    <div id='container'>
+      <div id="background">
+        <ol>
+          <template repeat="{{year in years}}">
+            <li class="year"><span>{{year}}</span></li>
+          </template>
+        </ol>
+      </div>
+      <div id="force_layout"><shadow></shadow></div>
+    </div>
+  </template>
+  <script>
+    Polymer("fixed-y-force-layout", {
+
+      /**
+       * The maximum of year in which paper was published.
+       *
+       * @attribute minYear
+       * @type number
+       * @default 1995
+       */
+      minYear: 1995,
+
+      /**
+       * The maximum of year in which paper was published.
+       *
+       * @attribute maxYear
+       * @type number
+       * @default 2015
+       */
+      maxYear: 2015,
+
+      margin: 50,
+      yearHeight: 20,
+      years: [],
+
+      ready: function() {
+        this.super();
+        for(var i = 0; i <= (this.maxYear - this.minYear); i++) {
+          this.years.push(this.minYear + i);
+        }
+        this.yearHeight = (this.height - this.margin * 2) / this.years.length;
+      },
+
+      init: function() {
+        console.log("init in fixed-y-force-layout");
+        this.super();
+      },
+
+      getYByNode: function(node) {
+        el = this;
+        if (typeof(node.year) !== "undefined") {
+          if (node.year < el.minYear) {
+            return el.margin / 2;
+          } else {
+            return ((node.year - el.minYear + 1) + 1/2) * el.yearHeight;
+          }
+        } else {
+          return el.height - el.margin / 2;
+        }
+      }
+
+    });  
+  </script>
+</polymer-element>
