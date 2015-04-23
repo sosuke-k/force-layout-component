@@ -1,0 +1,75 @@
+<!--
+  `fixed-y-force-layout` is a component displaying Special Force Layout of D3.
+  ```
+    <fixed-y-force-layout width='600' height='1000'></fixed-y-force-layout>
+  ```
+  If you want to know the way to customize, see [here](./how_to_use.html).
+@group D3 Elements
+@element fixed-y-force-layout
+@extends force-layout-component
+@homepage https://github.com/sosuke-k/force-layout-component
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="force-layout-component.html">
+
+<polymer-element
+  name="fixed-y-force-layout"
+  attributes="minYear maxYear"
+  extends="force-layout-component">
+
+  <template>
+    <style>
+      :host {
+        -webkit-user-select: none;
+      }
+      div#container {
+        position: relative;
+        width: {{width}}px;
+        height: {{height}}px;
+      }
+      h1 {
+        margin: 0;
+        background-color: blue;
+      }
+      div#force_layout, h1 {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: {{width}}px;
+        height: {{height}}px;
+      }
+    </style>
+    <div id='container'>
+      <h1>fixed-y-force-layout</h1>
+      <div id="force_layout"><shadow></shadow></div>
+    </div>
+  </template>
+  <script>
+    Polymer("fixed-y-force-layout", {
+
+      /**
+       * The maximum of year in which paper was published.
+       *
+       * @attribute minYear
+       * @type number
+       * @default 1995
+       */
+      minYear: 1995,
+
+      /**
+       * The maximum of year in which paper was published.
+       *
+       * @attribute maxYear
+       * @type number
+       * @default 2015
+       */
+      maxYear: 2015,
+
+      ready: function() {
+        this.super();
+      }
+
+    });  
+  </script>
+</polymer-element>
