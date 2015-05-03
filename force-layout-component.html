@@ -529,7 +529,7 @@
         var nodeCircle = el.stage.selectAll(".node circle");
         nodeCircle.attr("cx", function(d) { return d.x; })
                   .attr("cy", function(d) { return el.getYByNode(d); })
-                  .style("fill", groupColor);
+                  .style("fill", this.getColorByNode);
 
         var nodeTitle = el.stage.selectAll(".node text");
         nodeTitle.attr("x", function(d) { return d.x; })
@@ -539,6 +539,26 @@
 
       getYByNode: function(node) {
         return node.y;
+      },
+
+      getColorByNode: function(node) {
+        var group = node.group;
+        var color = "rgb(55, 71, 79)";
+        switch(group) {
+          case 1:
+            color = "blue";
+            break;
+          case 2:
+            color = "green";
+            break;
+          case 3:
+            color = "yellow";
+            break;
+          case 4:
+            color = "red";
+            break;
+        }
+        return color;
       },
 
       update: function() {
@@ -614,7 +634,7 @@
 
         var node = nodeEnterGroup.append("circle")
           .attr("r", 10)
-          .style("fill", groupColor);
+          .style("fill", this.getColorByNode);
 
         var title = nodeEnterGroup.append("text")
           .attr("dx", 10)
@@ -730,26 +750,6 @@
       },//end update
 
     });
-
-    function groupColor(n) {
-      var group = n.group;
-      var color = "rgb(55, 71, 79)";
-      switch(group) {
-        case 1:
-          color = "blue";
-          break;
-        case 2:
-          color = "green";
-          break;
-        case 3:
-          color = "yellow";
-          break;
-        case 4:
-          color = "red";
-          break;
-      }
-      return color;
-    }
 
     // function updateNode(el) {
     //   el.stage.selectAll(".node")
