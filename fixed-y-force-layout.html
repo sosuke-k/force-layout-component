@@ -120,8 +120,28 @@
         } else {
           return el.height - el.margin / 2;
         }
-      }
+      },
 
-    });  
+      getColorByNode: function(node) {
+        var group = node.group;
+        var color = "rgb(55, 71, 79)";
+        switch(group) {
+          case 1:
+            color = "blue";
+            break;
+          case 2:
+            color = "green";
+            break;
+          case 3:
+            color = "yellow";
+            break;
+          case 4:
+            color = "red";
+            break;
+        }
+        return color;
+      },
+
+    });
   </script>
 </polymer-element>
