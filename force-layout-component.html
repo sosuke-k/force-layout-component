@@ -488,71 +488,73 @@
       },
 
       init: function() {
-        el = this;
-        el.stage = d3.select(el.$.mysvg);
+        this.stage = d3.select(this.$.mysvg);
 
         try {
-          el.tip = d3.tip()
+          this.tip = d3.tip()
             .attr('class', 'd3-tip')
             .offset([-10, 0])
             .html(function (d) {
               return  d.title;
             });
-          el.stage.call(el.tip);
+          this.stage.call(this.tip);
         } catch(e) {
           console.log(e);
         }
 
-        el.force = d3.layout.force()
-          .nodes(el.nodes)
-          .links(el.links)
+        this.force = d3.layout.force()
+          .nodes(this.nodes)
+          .links(this.links)
           .charge(-200)
           .linkDistance(200)
-          .size([el.width, el.height]);
+          .size([this.width, this.height]);
 
       }, //end init
 
       tick: function() {
-        el = this;
+        var _this = this;
 
-        if (!el.handing) {
-          var link = el.stage.selectAll(".link");
+        if (!this.handing) {
+          var link = this.stage.selectAll(".link");
           // link.attr("x1", function(d) { return d.source.x; })
           //   .attr("y1", function(d) { return d.source.y; })
           //   .attr("x2", function(d) { return d.target.x; })
           //   .attr("y2", function(d) { return d.target.y; });
           link.attr("x1", function(d) { return d.source.x; })
-            .attr("y1", function(d) { return el.getYByNode(d.source); })
+            .attr("y1", function(d) { return _this.getYByNode(d.source); })
             .attr("x2", function(d) { return d.target.x; })
-            .attr("y2", function(d) { return el.getYByNode(d.target); });
+            .attr("y2", function(d) { return _this.getYByNode(d.target); });
         }
-        var nodeCircle = el.stage.selectAll(".node circle");
+        var nodeCircle = this.stage.selectAll(".node circle");
         nodeCircle.attr("cx", function(d) { return d.x; })
-                  .attr("cy", function(d) { return el.getYByNode(d); })
+                  // .attr("cy", this.getYByNode)
+                  .attr("cy", function(d) { return _this.getYByNode(d); })
                   .style("fill", this.getColorByNode);
 
-        var nodeTitle = el.stage.selectAll(".node text");
+        var nodeTitle = this.stage.selectAll(".node text");
         nodeTitle.attr("x", function(d) { return d.x; })
-                  .attr("y", function(d) { return el.getYByNode(d); });
+                  .attr("y", function(d) { return _this.getYByNode(d); });
 
       }, //end tick
 
       getYByNode: function(node) {
+        console.log(node);
         return node.y;
       },
 
       getColorByNode: function(node) {
+        console.log(node);
         return "rgb(55, 71, 79)";
       },
 
       update: function() {
         console.log("updating...");
-        var el = this;
+        var _this = this;
 
-        el.force.nodes(el.nodes).links(el.links);
+        this.force.nodes(this.nodes).links(this.links);
 
-        var nodeGroup = el.stage.selectAll(".node")
-          .data(el.nodes, function(d){
+        var nodeGroup = this.stage.selectAll(".node")
+          .data(this.nodes, function(d){
             return d.id;
           });
 
@@ -563,12 +565,12 @@
             console.log('onmousedown');
 
             if (event.altKey) {
-              el.handing = true;
-              el.handedNode = d3.select(this).on("mousedown.drag", null);
-              el.handedLink = el.stage.append("line")
+              _this.handing = true;
+              _this.handedNode = d3.select(this).on("mousedown.drag", null);
+              _this.handedLink = _this.stage.append("line")
                 .attr("class", "link handed")
                 .attr("x1", d.px)
-                .attr("y1", el.getYByNode(d)) //yByYear(d)) should let this function overridable!
+                .attr("y1", _this.getYByNode(d)) //yByYear(d)) should let this function overridable!
                 .attr("x2", d3.mouse(this)[0])
                 .attr("y2", d3.mouse(this)[1]);
             } else {
@@ -582,19 +584,19 @@
           .on("click", function(d) {
             console.log("click in node");
 
-            if (el.stage.selectAll(".node.active").data().filter(function(n) {
+            if (_this.stage.selectAll(".node.active").data().filter(function(n) {
               return n.index == d.index;
             }).length > 0 ) {
-              el.unselect();
+              _this.unselect();
             } else {
-              el.selectNode(d.id, false);
+              _this.selectNode(d.id, false);
             }
 
           })
           .on("dblclick", function(d) {
             console.log("dblclick");
 
-            var links = el.stage.selectAll(".link").data();
+            var links = _this.stage.selectAll(".link").data();
             console.log("links.length = " + links.length);
             var refNode = links.filter(function(l) {
               return l.source.index == d.index;
@@ -609,11 +611,11 @@
             console.log(JSON.stringify(refferedNodes));
 
           })
-          .call(el.force.drag);
+          .call(_this.force.drag);
 
-        if (el.tip != null) {
-          nodeEnterGroup.on('mouseover', el.tip.show)
-                        .on('mouseout', el.tip.hide);
+        if (this.tip != null) {
+          nodeEnterGroup.on('mouseover', this.tip.show)
+                        .on('mouseout', this.tip.hide);
         }
 
         var node = nodeEnterGroup.append("circle")
@@ -628,8 +630,8 @@
 
         nodeGroup.exit().remove();
 
-        var link = el.stage.selectAll(".link")
-          .data(el.links, function(l) {
+        var link = this.stage.selectAll(".link")
+          .data(this.links, function(l) {
             return l.id;
           });
 
@@ -640,20 +642,20 @@
           .on("click", function(d) {
             console.log("click in link");
 
-            if (el.stage.selectAll(".link.active").data().filter(function(l) {
+            if (_this.stage.selectAll(".link.active").data().filter(function(l) {
               var sourceSame = l.source.index == d.source.index ? true : false;
               var targetSame = l.target.index == d.target.index ? true : false;
               return sourceSame && targetSame;
             }).length > 0 ) {
-              el.unselect();
+              _this.unselect();
             } else {
-              el.selectLink(d.id, false);
+              _this.selectLink(d.id, false);
             }
           });
 
         link.exit().remove();
 
-        el.stage.append("defs").selectAll("marker")
+        this.stage.append("defs").selectAll("marker")
             .data(["suit", "licensing", "resolved"])
           .enter().append("marker")
             .attr("id", function(d) { return d; })
@@ -670,43 +672,43 @@
             .style("opacity", "0.6");
 
 
-        el.force.on("tick", function() {
-          el.tick();
+        this.force.on("tick", function() {
+          _this.tick();
         });
 
-        el.stage.on("mousemove", function() {
-          if (el.handing) {
-            if (el.handedLink != null) {
-              el.handedLink.attr("x1", el.handedNode.data()[0].px)
-                .attr("y1", el.getYByNode(el.handedNode.data()[0])) //yByYear(el.handedNode.data()[0])) should let this function overridable
+        this.stage.on("mousemove", function() {
+          if (_this.handing) {
+            if (_this.handedLink != null) {
+              _this.handedLink.attr("x1", _this.handedNode.data()[0].px)
+                .attr("y1", _this.getYByNode(_this.handedNode.data()[0])) //yByYear(_this.handedNode.data()[0])) should let this function overridable
                 .attr("x2", d3.mouse(this)[0])
                 .attr("y2", d3.mouse(this)[1]);
             }
           }
         });
 
-        el.stage.on("mouseup", function() {
+        this.stage.on("mouseup", function() {
           console.log('mouseup in svg');
           console.log("event.altKey = " + event.altKey);
-          if(el.handing) {
-            el.handing = false;
+          if(_this.handing) {
+            _this.handing = false;
 
-            var handedLink = el.stage.selectAll(".link.handed");
+            var handedLink = _this.stage.selectAll(".link.handed");
             handedLink.remove();
 
-            el.stage.selectAll(".node").call(el.force.drag);
+            _this.stage.selectAll(".node").call(_this.force.drag);
 
             var mouseP = d3.mouse(this);
-            var nodeData = el.stage.selectAll(".node circle").data();
-            var handedNode = el.handedNode.data()[0];
+            var nodeData = _this.stage.selectAll(".node circle").data();
+            var handedNode = _this.handedNode.data()[0];
 
             var nearestIndex = handedNode.index;
             var nearestId = null;
-            var nearestDistance = Math.sqrt(el.width * el.width + el.height * el.height);
+            var nearestDistance = Math.sqrt(_this.width * _this.width + _this.height * _this.height);
 
             for (var i = 0; i < nodeData.length; i++) {
               var x1 = nodeData[i].x;
-              var y1 = el.getYByNode(nodeData[i]); //yByYear(nodeData[i]); should let this function overridable
+              var y1 = _this.getYByNode(nodeData[i]); //yByYear(nodeData[i]); should let this function overridable
               var x2 = mouseP[0];
               var y2 = mouseP[1];
               var distance = Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
@@ -719,7 +721,7 @@
               }
             }
 
-            el.addLink(handedNode.id, nearestId );
+            _this.addLink(handedNode.id, nearestId );
           }
         });
 
@@ -729,34 +731,34 @@
         //   update(el);
         // });
 
-        el.force.start();
+        this.force.start();
 
       },//end update
 
     });
 
     // function updateNode(el) {
-    //   el.stage.selectAll(".node")
+    //   _this.stage.selectAll(".node")
 
     // }
 
-    function activateSelectedNode(el) {
-      el.stage.selectAll(".node")
+    function activateSelectedNode(_this) {
+      _this.stage.selectAll(".node")
         .classed("active", function(n) {
-          return _.contains(el.selectedNodeIds, n.id);
+          return _.contains(_this.selectedNodeIds, n.id);
         })
         .style("opacity", function(n) {
-          return el.unselected || _.contains(el.selectedNodeIds, n.id) ? 1.0 : 0.3;
+          return _this.unselected || _.contains(_this.selectedNodeIds, n.id) ? 1.0 : 0.3;
         });
     }// end activateSelectedNode
 
-    function activateSelectedLink(el) {
-      el.stage.selectAll(".link")
+    function activateSelectedLink(_this) {
+      _this.stage.selectAll(".link")
         .classed("active", function(l) {
-          return _.contains(el.selectedLinkIds, l.id);
+          return _.contains(_this.selectedLinkIds, l.id);
         })
         .style("opacity", function(l) {
-          return el.unselected || _.contains(el.selectedLinkIds, l.id) ? 1.0 : 0.3;
+          return _this.unselected || _.contains(_this.selectedLinkIds, l.id) ? 1.0 : 0.3;
         });
     }// end activateSelectedLink
 
